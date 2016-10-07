@@ -29,7 +29,6 @@ local function wifi_start_ST(list_aps)
                 wifi.sta.config(key,config.SSID[key])
                 wifi.sta.connect()
                 print("Connecting to " .. key .. " ...")
-                --config.SSID = nil  -- can save memory
                 tmr.alarm(1, 2500, 1, wifi_wait_ip)
             end
         end
@@ -38,7 +37,6 @@ local function wifi_start_ST(list_aps)
     end
 end
 
-
 local function wifi_start_AP()
     config = require("config")
 
@@ -46,23 +44,24 @@ local function wifi_start_AP()
     wifi.ap.config(config.ap_config)
     wifi.ap.setip(config.AP)
 
-    print("Soft AP started")
-    print("Heep:(bytes)"..node.heap());
-    print("MAC:"..wifi.ap.getmac().."\r\nIP:"..wifi.ap.getip());
+    print("I:Soft AP started")
+    print("I:Heep:(bytes)"..node.heap());
+    print("I:MAC:"..wifi.ap.getmac().."\r\nIP:"..wifi.ap.getip());
+    --app.start()
 end
-
 
 function module.start()
     print("Configuring Wifi ...")
     if config.WFMODE == "AP" then
             wifi_start_AP()
-        elseif op == "STATION" then
+        elseif config.WFMODE == "STATION" then
             wifi_start_ST()
             wifi.setmode(wifi.STATION);
             wifi.sta.getap(wifi_start_ST)
         else
             print("Error to init wifi config!")
         end
+    -- cleanup
     config.AP = nil;
     config.ap_config = nil;
     collectgarbage();
