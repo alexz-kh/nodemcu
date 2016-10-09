@@ -1,27 +1,28 @@
 -- file : config.lua
 local module = {}
 
---module.WFMODE = "STATION"
+-- STATION related config
+module.WFMODE = "STATION"
 module.SSID = {}
-module.SSID["CoolNw"] = "12345678"
+module.SSID["Zzz"] = "reallynosense"
+module.MAC = "c8:3a:35:d0:00:90"
 
 -- Broker host
-module.HOST = "192.168.4.2"
+module.HOST = "192.168.1.122"
 module.PORT = 8883
-module.ID = node.chipid()
--- 14036807
-module.MAC = "DE:AD:BE:EF:7A:C0"
-
+module.ID = "node1"
+--module.ID = node.chipid()
 module.ENDPOINT = "nodemcu/"
 
-module.WFMODE = "AP"
+--  ws2818 related config
+module.numleds = 10
 
+-- AP related config
+--module.WFMODE = "AP"
 module.ap_config = {};
 module.ap_config['ssid'] = "ESP8266"
 module.ap_config['pwd'] = "12345678"
-
 --for k,v in pairs(config.AP_SSID) do print(k,v) end
-
 module.AP = {};
 module.AP.ip = "192.168.4.1";
 module.AP.netmask = "255.255.255.0";

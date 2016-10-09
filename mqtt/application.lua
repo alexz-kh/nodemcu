@@ -1,79 +1,79 @@
 -- file : application.lua
+module=nil
 local module = {}
-m = nil
-
-----
-config = require("config")
-setup = require("setup")
-
-setup.start()
-----
+NUMLEDS = 185;
+---
 
 -- Sends a simple ping to the broker
---local function send_ping()
-function send_ping()
+local function send_ping()
     m:publish(config.ENDPOINT .. "ping","id=" .. config.ID,0,0)
 end
 
 -- Sends my id to the broker for registration
---local function register_myself()
-function register_myself()
+local function register_myself()
     m:subscribe(config.ENDPOINT .. config.ID,0,function(conn)
-        print("Successfully subscribed to data endpoint")
+        print("I:Subscribed to endpoint:" .. config.ENDPOINT .. config.ID)
     end)
 end
 
-function on_click()
-    gpio.trig(pin)
-    print "Pressed";send_ping()
-    tmr.stop(5)
-    tmr.alarm(5, 500, tmr.ALARM_SINGLE, register_on_click)
+local function strip_set_rgb(r,g,b)
+    ws2812.init()
+    ws2812.write(string.char(0,0,0):rep(NUMLEDS))
+    ws2812.write(string.char(g,r,b):rep(NUMLEDS))
+    --ws2812.write(string.char(0,50,0):rep(185))
 end
 
-function register_on_click()
-    pin=3
-    mode=gpio.INT
-    gpio.mode(pin, mode, gpio.PULLUP)
-    gpio.trig(pin, "down", on_click)
+local function strip_ping(r,g,b,count)
+    local i, buffer = 0, ws2812.newBuffer(NUMLEDS, 3);
+    buffer:fill(0,0,0);
+    tmr.alarm(5, 50, 1, function()
+            i=i+1
+            buffer:fade(2)
+            buffer:set(i%buffer:size()+1, g, r, b)
+            ws2812.write(buffer)
+            end)
+    local t = 0
+    tmr.alarm(4,1000,1, function()
+        t=t+1
+        print(t.."/"..count)
+        if t > count then
+            tmr.stop(0);tmr.stop(1);
+            buffer:fill(0,0,0);
+            ws2812.write(buffer)
+        end
+    end)
 end
 
-function led_on()
-    pin=4
-    mode=gpio.OUTPUT
-    gpio.mode(pin, mode)
-    gpio.write(pin, gpio.LOW)
-    tmr.stop(4)
-    tmr.alarm(4, 2500, tmr.ALARM_SINGLE, function() gpio.write(pin, gpio.HIGH) end)
-end
-
---local function mqtt_start()
-function mqtt_start()
+local function mqtt_start()
     m = mqtt.Client(config.ID, 120)
     -- register message callback beforehand
     m:on("message", function(conn, topic, data)
       if data ~= nil then
         print(topic .. ": " .. data)
-        led_on()
-        --register_on_click()
-        -- do something, we have received a message
+        if data.match(string.lower(data), "rgb") then
+          print ("The word 'rgb' was found:")
+          local r, g, b = string.match(data, "(%d+),(%d+),(%d+)")
+          strip_set_rgb(r,g,b)
+        elseif data.match(string.lower(data), "buffer") then
+          local r, g, b, count = string.match(data, "(%d+),(%d+),(%d+),(%d+)")
+          strip_ping(r,g,b,count)
+        end
       end
     end)
     -- Connect to broker
     m:connect(config.HOST, config.PORT, 0, 1, function(con)
         register_myself()
-        print "zzz"
-        -- And then pings each 1000 milliseconds
-        --tmr.stop(6)
-        --tmr.alarm(6, 1000, 1, send_ping)
-        --send_ping()
+        -- And then pings each 60s
+        tmr.stop(6)
+        tmr.alarm(6, 60*1000, 1, send_ping)
     end)
 end
 
---function module.start()
+function module.start()
+  ws2812.init()
+  strip_set_rgb(0,0,0)
+  print("fuck")
   mqtt_start()
---end
+end
 
---return module
-
-
-
+return module

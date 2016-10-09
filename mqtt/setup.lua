@@ -11,7 +11,7 @@ local function wifi_wait_ip()
     print("MAC address is: " .. wifi.ap.getmac())
     print("IP is "..wifi.sta.getip())
     print("====================================")
-    --app.start()
+    app.start()
   end
 end
 
@@ -19,11 +19,11 @@ local function wifi_start_ST(list_aps)
     if list_aps then
         for key,value in pairs(list_aps) do
             if config.SSID and config.SSID[key] then
-                wifi.setmode(wifi.STATION);
                 for k,v in pairs(config) do
                     if k == "MAC" then
                         print(k.."="..v)
                         wifi.sta.setmac(v)
+                        tmr.delay(1000)
                     end
                 end
                 wifi.sta.config(key,config.SSID[key])
@@ -43,20 +43,19 @@ local function wifi_start_AP()
     wifi.setmode(wifi.SOFTAP)
     wifi.ap.config(config.ap_config)
     wifi.ap.setip(config.AP)
-
     print("I:Soft AP started")
     print("I:Heep:(bytes)"..node.heap());
     print("I:MAC:"..wifi.ap.getmac().."\r\nIP:"..wifi.ap.getip());
-    --app.start()
+    app.start()
 end
 
 function module.start()
     print("Configuring Wifi ...")
     if config.WFMODE == "AP" then
-            wifi_start_AP()
+            wifi.sta.getap(wifi_start_AP)
         elseif config.WFMODE == "STATION" then
-            wifi_start_ST()
             wifi.setmode(wifi.STATION);
+            tmr.delay(1000)
             wifi.sta.getap(wifi_start_ST)
         else
             print("Error to init wifi config!")
