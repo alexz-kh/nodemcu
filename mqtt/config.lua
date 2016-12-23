@@ -5,7 +5,7 @@ local module = {}
 module.WFMODE = "STATION"
 module.SSID = {}
 module.SSID["Zzz"] = "reallynosense"
-module.MAC = "5c:cf:7f:c3:3f:d5"
+module.MAC = "18:fe:34:d6:2f:47"
 -- 5c:cf:7f:c3:3f:d5 nodemcu3
 -- c8:3a:35:d0:00:91 nodemcu1
 -- 18:fe:34:d6:2f:47 nodemcu-dev
